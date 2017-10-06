@@ -1,4 +1,3 @@
-setwd("/home/ruser/GANNTrader/server/R/")
 library(xts)
 library(dplyr)
 
@@ -40,13 +39,14 @@ datHour <- lapply(datList,function(x){
   tempHour <- xts(tempHour[,-5], as.POSIXct(tempHour$time))
 })
 names(datHour) <- paste0(names(datHour), "hour")
-
+datHour[[1]]
 ### 土日を削る
 is.not.market <- function(x){
-  (weekdays(as.Date(x)) == "土曜日" & as.integer(substr(x, 12, 13)) > 5) |
-  weekdays(as.Date(x)) == "日曜日" |
+  (weekdays(as.Date(x)) == "金曜日" & as.integer(substr(x, 12, 13)) > 5) |
+  weekdays(as.Date(x)) == "土曜日" |
   (weekdays(as.Date(x)) == "月曜日" & as.integer(substr(x, 12, 13)) < 7)
 }
+
 if(is.not.market(tail(index(datHour[[1]]),1)) == FALSE){
   load("../data/realtimeData.RData")
   for(i in 1:6) realtimeData[[i]] <- rbind(realtimeData[[i]], datHour[[i]][nrow(datHour[[i]]),])
