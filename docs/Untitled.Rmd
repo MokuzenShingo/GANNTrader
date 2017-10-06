@@ -1,0 +1,88 @@
+---
+title: "GANNTrader USDJPY"
+output: html_document
+---
+
+Last update : `r Sys.time()`  
+[Performance report](https://mokuzenshingo.shinyapps.io/return_analysis/) : update every Saturday  
+[Reference](https://github.com/MokuzenShingo/POTAUGAEM)
+
+```{r setup, include=FALSE}
+##############################################################
+# initialize
+##############################################################
+source("../R/server_set.R")
+symbol.name <- c("USDJPYhour")  #,"EURJPY", "GBPJPY", "EURUSD", "GBPUSD","EURGBP")
+
+# data
+load("../data/realtimeData.RData")
+price <- na.omit(realtimeData[[symbol.name]]["2017-07-01 06:00:0::"])
+
+# model
+validResult <- readRDS("../data/USDJPYhour_bestGeneration.rds")
+gtype <- gtype.ini(validResult) 
+
+# position.table
+price_temp <- coredata(price[nrow(price) - 0:23,])
+position.table <- data.frame(
+  posi.flag = c(0, rep(1, 24), rep(-1, 24)),
+  backdate  = c(0, 1:24, 1:24),
+  open      = c(0, price_temp[nrow(price_temp):1, "open"],  price_temp[nrow(price_temp):1, "open"]),
+  high      = c(0, price_temp[nrow(price_temp):1, "high"],  price_temp[nrow(price_temp):1, "high"]),
+  low       = c(0, price_temp[nrow(price_temp):1, "low"] ,  price_temp[nrow(price_temp):1, "low"]),
+  close     = c(0, price_temp[nrow(price_temp):1, "close"], price_temp[nrow(price_temp):1, "close"])
+)
+
+##############################################################
+#  predict optimum action
+##############################################################
+### classifer market condition
+indicators <- get_indicators(price)  # calculate technical indicators
+signal.table <- signal.table.ini(validResult, price) # calculate market condition signal
+
+### predict optimum actions
+trade_signal <- apply(position.table, 1, function(position){
+  # each classifier predict action
+  step.sig <- apply(gtype, 1, function(x){
+    ID <- x[length(x)]
+    x <- as.numeric(x[-length(x)])
+    ind.sig(gtype = x,
+            curr.price  = tail(price, 1),
+            curr.vola   = tail(indicators[[4]][, 1], 1),
+            signal      = tail(signal.table[, ID], 1),
+            posi.price  = position[3:6],
+            posi.flag   = position[1]
+    )
+  })
+
+  # ensemble predicted actions
+  ense.sig <- as.integer(mode(step.sig))
+
+  c(ense.sig, sum(step.sig == -1) / 500, sum(step.sig == 0) / 500, sum(step.sig == 1) / 500)
+})
+trade_signal.t <- t(trade_signal)
+
+##############################################################
+#  make output data.frame
+##############################################################
+entry_date <- c(tail(index(price) + 3600, 1), tail(index(price), 24)[24:1], tail(index(price), 24)[24:1])
+position <- c("none", rep("long", 24), rep("short", 24) )
+
+hour.df <- data.frame(as.character(entry_date), position,  # index
+                      sapply(trade_signal.t[,1],action_text),  # action
+                      apply(trade_signal.t[,2:4],2,percent_text))  # probability
+
+names(hour.df) <- c("EntryDate", "Position", "Action", "short", "hold", "long")
+```
+
+```{r, echo = FALSE}
+datatable(hour.df, rownames = FALSE,
+          options = list( columnDefs = list(list(className = 'dt-body-right',  targets = 3:5),
+                                            list(className = 'dt-body-center', targets = 0:2)))
+          )
+```
+
+```{r, echo = F, out.width = "100%"}
+chart_Series(price, subset = paste0(Sys.Date()-10, "::", Sys.Date()), type = "candlesticks", name ="USDJPY")
+```
+
