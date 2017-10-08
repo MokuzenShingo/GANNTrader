@@ -39,8 +39,8 @@ datHour <- lapply(datList,function(x){
   tempHour <- xts(tempHour[,-5], as.POSIXct(tempHour$time))
 })
 names(datHour) <- paste0(names(datHour), "hour")
-datHour[[1]]
-### 土日を削る
+
+### 
 is.not.market <- function(x){
   (weekdays(as.Date(x)) == "金曜日" & as.integer(substr(x, 12, 13)) > 5) |
   weekdays(as.Date(x)) == "土曜日" |
