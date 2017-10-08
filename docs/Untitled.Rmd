@@ -5,7 +5,7 @@ output: html_document
 
 Last update : `r Sys.time()` (update every hour)  
 [Performance report](https://mokuzenshingo.shinyapps.io/return_analysis/) (update every Saturday)  
-[Reference](https://github.com/MokuzenShingo/POTAUGAEM)  
+[Reference](https://github.com/MokuzenShingo/POTAUGAEM)  
 [Resources](https://github.com/MokuzenShingo/GANNTrader)
 
 ```{r setup, include=FALSE}
