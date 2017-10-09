@@ -1,3 +1,4 @@
+setwd("/home/ruser/GANNTrader/server/R/")
 library(xts)
 library(dplyr)
 
@@ -50,5 +51,6 @@ is.not.market <- function(x){
 if(is.not.market(tail(index(datHour[[1]]),1)) == FALSE){
   load("../data/realtimeData.RData")
   for(i in 1:6) realtimeData[[i]] <- rbind(realtimeData[[i]], datHour[[i]][nrow(datHour[[i]]),])
-  save(realtimeData, file = "../data/realtimeData.RData")
+ save(realtimeData, file = "../data/realtimeData.RData")
+
 }
