@@ -43,8 +43,8 @@ names(datHour) <- paste0(names(datHour), "hour")
 
 ### 
 is.not.market <- function(x){
-  (weekdays(as.Date(x)) == "金曜日" & as.integer(substr(x, 12, 13)) > 5) |
-  weekdays(as.Date(x)) == "土曜日" |
+  (weekdays(as.Date(x)) == "土曜日" & as.integer(substr(x, 12, 13)) > 5) |
+  weekdays(as.Date(x)) == "日曜日" |
   (weekdays(as.Date(x)) == "月曜日" & as.integer(substr(x, 12, 13)) < 7)
 }
 
