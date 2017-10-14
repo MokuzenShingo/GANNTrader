@@ -43,9 +43,9 @@ names(datHour) <- paste0(names(datHour), "hour")
 
 ### 
 is.not.market <- function(x){
-  (weekdays(as.Date(x)) == "土曜日" & as.integer(substr(x, 12, 13)) > 5) |
-  weekdays(as.Date(x)) == "日曜日" |
-  (weekdays(as.Date(x)) == "月曜日" & as.integer(substr(x, 12, 13)) < 7)
+  (weekdays(x) == "土曜日" & as.integer(substr(x, 12, 13)) > 5) |
+  weekdays(x) == "日曜日" |
+  (weekdays(x) == "月曜日" & as.integer(substr(x, 12, 13)) < 7)
 }
 
 if(is.not.market(tail(index(datHour[[1]]),1)) == FALSE){
